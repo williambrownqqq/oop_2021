@@ -3,23 +3,28 @@ from abc import ABC, abstractclassmethod, abstractmethod
 
 class ICourse(ABC):
     """Abstract class for 'Courses' """
+
+    """ take data for course from database """
     @abstractmethod
     def TakeData(self, teacher):
         pass
 
+    """withdraw info """
     @abstractmethod
     def __str__(self):
         pass
 
-""" Create course """
+
 class Course(ICourse):
+    """ Create common course """
+
     def __init__(self, id):
         self.CourseName = None
         self.program = None
         self.place = None
         self.id = id
 
-    """ take data from database """
+    """ take data for course from database """
     def TakeData(self, teacher1):
         try:
             print("id = ", self.id)
@@ -43,10 +48,12 @@ class Course(ICourse):
 
 
 class ILocalCourse(Course):
+    """ Create Local course """
     def __init__(self, id):
         super().__init__(id)
         self.CourseType = None
 
+    """ method for define location"""
     def localisation(self):
         try:
             sqlQuery = "SELECT Localisation FROM course WHERE CourseTeacherID = '{0}'"
@@ -66,10 +73,12 @@ class ILocalCourse(Course):
 
 
 class IOfficeCourse(Course):
+    """ Create Local course """
     def __init__(self, id):
         super().__init__(id)
         self.CourseType = None
 
+    """ method for define location"""
     def localisation(self):
         try:
             sqlQuery = "SELECT Localisation FROM course WHERE CourseTeacherID = '{0}'"
@@ -88,8 +97,10 @@ class IOfficeCourse(Course):
                f"Type: {self.CourseType}\n"
 
 
-"""Abstract class for 'Teacher' """
+
 class ITeacher(ABC):
+    """Abstract class for 'Teacher' """
+
     @abstractmethod
     def TakeData(self):
         pass
