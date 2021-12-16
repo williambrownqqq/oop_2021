@@ -2,34 +2,81 @@ from pentagon import *
 from abc import ABC, abstractclassmethod, abstractmethod
 
 class ICourse(ABC):
+    """Abstract class for 'Courses' """
     @abstractmethod
-    def TakeData(self, id):
+    def TakeData(self, teacher):
         pass
 
     @abstractmethod
     def __str__(self):
         pass
 
+""" Create course """
 class Course(ICourse):
-    def __init__(self):
+    def __init__(self, id):
         self.CourseName = None
         self.program = None
         self.place = None
+        self.id = id
 
-    def TakeData(self, id, teacher1):
+    """ take data from database """
+    def TakeData(self, teacher1):
         try:
-            # sqlQuery = "SELECT CourseTeacherID FROM course WHERE CourseTeacherID = '{0}'"
-            # MyCursor.execute(sqlQuery.format(str(id)))
-            # MyResult = MyCursor.fetchone()[0]
+            print("id = ", self.id)
             self.CourseName = teacher1
-            sqlQuery = "SELECT CourseProgram FROM course WHERE CourseTeacherID = '{0}'"
-            MyCursor.execute(sqlQuery.format(str(id)))
+            sqlQuery = f"SELECT CourseProgram FROM course WHERE CourseTeacherID = {self.id}"
+            MyCursor.execute(sqlQuery.format(str(self.id)))
             MyResult = MyCursor.fetchone()[0]
             self.program = MyResult
-            sqlQuery = "SELECT CoursePlace FROM course WHERE CourseTeacherID = '{0}'"
-            MyCursor.execute(sqlQuery.format(str(id)))
+            sqlQuery = f"SELECT CoursePlace FROM course WHERE CourseTeacherID = {self.id}"
+            MyCursor.execute(sqlQuery.format(str(self.id)))
             MyResult = MyCursor.fetchone()[0]
             self.place = MyResult
+        except Exception as error:
+            print("1Failed to take info from the table", error)
+
+    # def __str__(self):
+    #     return f"Yo selected Course\n" \
+    #            f"{self.CourseName}\n" \
+    #            f"Program: {self.program}\n" \
+    #            f"Place: {self.place}\n"
+
+
+class ILocalCourse(Course):
+    def __init__(self, id):
+        super().__init__(id)
+        self.CourseType = None
+
+    def localisation(self):
+        try:
+            sqlQuery = "SELECT Localisation FROM course WHERE CourseTeacherID = '{0}'"
+            MyCursor.execute(sqlQuery.format(str(self.id)))
+            MyResult = MyCursor.fetchone()[0]
+            self.CourseType = MyResult
+
+        except Exception as error:
+            print("Failed to take info from the table", error)
+
+    def __str__(self):
+        return f"Yo selected Course\n" \
+               f"{self.CourseName}\n" \
+               f"Program: {self.program}\n" \
+               f"Place: {self.place}\n" \
+               f"Type: {self.CourseType}\n"
+
+
+class IOfficeCourse(Course):
+    def __init__(self, id):
+        super().__init__(id)
+        self.CourseType = None
+
+    def localisation(self):
+        try:
+            sqlQuery = "SELECT Localisation FROM course WHERE CourseTeacherID = '{0}'"
+            MyCursor.execute(sqlQuery.format(str(self.id)))
+            MyResult = MyCursor.fetchone()[0]
+            self.CourseType = MyResult
+
         except Exception as error:
             print("Failed to info from the table", error)
 
@@ -37,22 +84,20 @@ class Course(ICourse):
         return f"Yo selected Course\n" \
                f"{self.CourseName}\n" \
                f"Program: {self.program}\n" \
-               f"Place: {self.place}\n"
+               f"Place: {self.place}\n" \
+               f"Type: {self.CourseType}\n"
 
-class ILocalCourse(Course):
-    pass
 
-class IOfficeCourse(Course):
-    pass
-
+"""Abstract class for 'Teacher' """
 class ITeacher(ABC):
     @abstractmethod
-    def TakeData(self, id):
+    def TakeData(self):
         pass
 
     @abstractmethod
     def __str__(self):
         pass
+
 
 class Teacher(ITeacher):
     def __init__(self, id):
@@ -75,42 +120,77 @@ class Teacher(ITeacher):
             MyResult = MyCursor.fetchone()[0]
             self.course = MyResult
         except Exception as error:
-            print("Failed to info from the table", error)
+            print("Failed to take info from the table", error)
 
     def __str__(self):
-        return f"Teacher Full name: {self.name}\n" \
-               f"Course: {self.course}"
+        return f"Course: {self.course}\n" \
+               f"Teacher Full name: {self.name}"
 
-
-
+"""Abstract class for 'CourseFactory' """
 class ICourseFactory(ABC):
     @abstractmethod
     def withdrawCourse(self):
         print("withdraw info about selected course")
 
-
-
+""" Create course and teacher for chosen course"""
 class CourseFactory():
-    def __init__(self, choice):
+    def __init__(self, choice, local):
         self.choice = choice
+        self.local = local
 
+    """ Create course and teacher """
     def withdrawCourse(self):
-        teacher1 = Teacher(self.choice)
-        teacher1.TakeData()
+        if self.local == "local":
+            teacher1 = Teacher(self.choice)
+            teacher1.TakeData()
 
-        course = Course()
-        course.TakeData(self.choice, teacher1)
-        print(course)
+            course = ILocalCourse(self.choice)
+            course.TakeData(teacher1)
+            course.localisation()
+            print(course)
+
+        elif (self.local == "office"):
+            teacher1 = Teacher(self.choice)
+            teacher1.TakeData()
+
+            course = IOfficeCourse(self.choice)
+            course.TakeData(teacher1)
+            course.localisation()
+            print(course)
+
 
 def main():
+    print("local/office")
+    while True:
+        local = input("select: ")
+        if local.lower() in ['local', 'office']:
+            break
+        else:
+            print(f"wrong choice, try again")
 
+    if local == "local":
+        print("1 - SpeedRaceCourse")
+        print("2 - HikingClub")
+        print("3 - DirtJumpingCourse")
+    elif local == "office":
+        print("4 - BoringCourse")
+        print("5 - C# course")
+        print("6 - Python course")
 
-    print("1 - SpeedRaceCourse")
-    print("2 - HikingClub")
-    print("3 - BoringCourse")
-    choice = input("select: ")
-    factory = CourseFactory(choice)
-    factory.withdrawCourse()
+    while True:
+        choice = input("select: ")
+        if int(choice) in range(4, 7) and local == "office":
+            break
+        if int(choice) in range(1, 4) and local == "local":
+            break
+        else:
+            print(f"wrong choice, try again")
+
+    if (local == "local" and int(choice) in range(1, 4)) or (local == "office" and int(choice) in range(4, 7)):
+        factory = CourseFactory(choice, local)
+        factory.withdrawCourse()
+    else:
+        print("wrong choice")
 
 
 main()
